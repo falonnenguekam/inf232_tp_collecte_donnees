@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card shadow-sm p-4">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0" style="color:#0a3d62;">
+          📋 Étudiant n° {{ total + 1 }}
+        </h3>
+        <span class="badge bg-primary fs-6">{{ total }} / 100</span>
+      </div>
+
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Âge</label>
+            {{ form.age(class="form-control", placeholder="Ex: 20") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Sexe</label>
+            {{ form.sexe(class="form-select") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Niveau d'études</label>
+            {{ form.niveau_etudes(class="form-select") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Filière</label>
+            {{ form.filiere(class="form-select") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Heures d'étude par jour
+            </label>
+            {{ form.heures_etude(class="form-control",
+                                 placeholder="Ex: 3.5") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Moment d'étude préféré
+            </label>
+            {{ form.moment_etude(class="form-select") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Matière la plus étudiée
+            </label>
+            {{ form.matiere_principale(class="form-select") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Lieu d'étude préféré
+            </label>
+            {{ form.lieu_etude(class="form-select") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Méthode d'étude principale
+            </label>
+            {{ form.methode_etude(class="form-select") }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Satisfaction de l'emploi du temps
+            </label>
+            {{ form.satisfaction(class="form-select") }}
+          </div>
+
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary px-4">
+            ✅ Enregistrer
+          </button>
+          <a href="/donnees" class="btn btn-outline-secondary px-4">
+            Voir les données
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

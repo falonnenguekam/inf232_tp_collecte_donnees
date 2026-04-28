@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+
+<h3 class="fw-bold mb-4" style="color:#0a3d62;">
+  📊 Tableau de bord — Habitudes d'étude
+</h3>
+
+{% if stats %}
+
+  <!-- Cartes statistiques -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+      <div class="card card-stat shadow-sm p-3 text-center">
+        <p class="text-muted mb-1">Étudiants analysés</p>
+        <h3 class="fw-bold text-primary">{{ stats.total }}</h3>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-stat shadow-sm p-3 text-center">
+        <p class="text-muted mb-1">Heures moy. / jour</p>
+        <h3 class="fw-bold text-success">{{ stats.heures_moy }} h</h3>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-stat shadow-sm p-3 text-center">
+        <p class="text-muted mb-1">Moment préféré</p>
+        <h4 class="fw-bold text-warning">{{ stats.moment_top }}</h4>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-stat shadow-sm p-3 text-center">
+        <p class="text-muted mb-1">Très satisfaits</p>
+        <h3 class="fw-bold text-info">{{ stats.pct_tres_satisfait }} %</h3>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-stat shadow-sm p-3 text-center">
+        <p class="text-muted mb-1">Lieu préféré</p>
+        <h4 class="fw-bold text-secondary">{{ stats.lieu_top }}</h4>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-stat shadow-sm p-3 text-center">
+        <p class="text-muted mb-1">Méthode la plus utilisée</p>
+        <h4 class="fw-bold text-danger">{{ stats.methode_top }}</h4>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-stat shadow-sm p-3 text-center">
+        <p class="text-muted mb-1">Filière qui étudie le plus</p>
+        <h4 class="fw-bold text-primary">{{ stats.filiere_top }}</h4>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Graphiques -->
+  <div class="row g-4">
+    {% for graphique in graphiques %}
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        {{ graphique | safe }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <p class="fs-5">Aucune donnée à analyser.</p>
+    <a href="/formulaire" class="btn btn-primary">
+      Saisir le premier étudiant
+    </a>
+  </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+
+<div class="text-center py-4">
+  <h1 class="fw-bold" style="color:#0a3d62;">
+    📚 Analyse des Habitudes d'Étude
+  </h1>
+  <p class="text-muted fs-5">
+    Collecte sur 100 étudiants — INF 232 EC2
+  </p>
+</div>
+
+<!-- Barre de progression -->
+<div class="card shadow-sm p-4 mb-4">
+  <div class="d-flex justify-content-between mb-2">
+    <span class="fw-semibold">Progression de la collecte</span>
+    <span class="fw-bold">{{ total }} / 100 étudiants</span>
+  </div>
+  <div class="progress" style="height: 25px; border-radius: 10px;">
+    <div class="progress-bar bg-primary progress-bar-striped
+                progress-bar-animated"
+         style="width: {{ total }}%;">
+      {{ total }}%
+    </div>
+  </div>
+</div>
+
+<!-- Cartes statistiques -->
+<div class="row g-3 mb-4">
+
+  <div class="col-md-4">
+    <div class="card card-stat shadow-sm p-4 text-center">
+      <p class="text-muted mb-1">Étudiants enregistrés</p>
+      <h2 class="fw-bold text-primary">{{ total }}</h2>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card card-stat shadow-sm p-4 text-center">
+      <p class="text-muted mb-1">Très satisfaits</p>
+      <h2 class="fw-bold text-success">{{ tres_satisfaits }}</h2>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card card-stat shadow-sm p-4 text-center">
+      <p class="text-muted mb-1">Taux de satisfaction</p>
+      <h2 class="fw-bold text-warning">{{ taux_satisfaction }} %</h2>
+    </div>
+  </div>
+
+</div>
+
+<!-- Boutons -->
+<div class="d-flex justify-content-center gap-3 mt-3">
+  {% if total < 100 %}
+  <a href="/formulaire" class="btn btn-primary btn-lg px-5">
+    ➕ Saisir un étudiant
+  </a>
+  {% endif %}
+  <a href="/dashboard" class="btn btn-outline-primary btn-lg px-5">
+    📊 Voir le dashboard
+  </a>
+</div>
+
+{% endblock %}

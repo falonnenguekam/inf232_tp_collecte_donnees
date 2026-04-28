@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="fw-bold" style="color:#0a3d62;">
+    📋 Liste des étudiants
+  </h3>
+  <span class="badge bg-primary fs-6">
+    {{ etudiants|length }} / 100
+  </span>
+</div>
+
+{% if etudiants %}
+<div class="table-responsive">
+  <table class="table table-striped table-hover align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Âge</th>
+        <th>Sexe</th>
+        <th>Niveau</th>
+        <th>Filière</th>
+        <th>Heures/jour</th>
+        <th>Moment</th>
+        <th>Lieu</th>
+        <th>Méthode</th>
+        <th>Satisfaction</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in etudiants %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ e.age }} ans</td>
+        <td>
+          <span class="badge
+            {{ 'bg-primary' if e.sexe == 'M' else 'bg-danger' }}">
+            {{ e.sexe }}
+          </span>
+        </td>
+        <td>{{ e.niveau_etudes }}</td>
+        <td>{{ e.filiere }}</td>
+        <td class="fw-bold">{{ e.heures_etude }} h</td>
+        <td>{{ e.moment_etude }}</td>
+        <td>{{ e.lieu_etude }}</td>
+        <td>{{ e.methode_etude }}</td>
+        <td>
+          <span class="badge
+            {% if e.satisfaction == 'Très' %}bg-success
+            {% elif e.satisfaction == 'Assez' %}bg-info text-dark
+            {% elif e.satisfaction == 'Peu' %}bg-warning text-dark
+            {% else %}bg-danger{% endif %}">
+            {{ e.satisfaction }}
+          </span>
+        </td>
+        <td>
+          <a href="/supprimer/{{ e.id }}"
+             class="btn btn-danger btn-sm"
+             onclick="return confirm('Supprimer cet étudiant ?')">
+            🗑
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+<div class="text-center py-5 text-muted">
+  <p class="fs-5">Aucun étudiant enregistré.</p>
+  <a href="/formulaire" class="btn btn-primary">
+    Saisir le premier étudiant
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}

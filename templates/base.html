@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INF 232 — Emploi du Temps Étudiant</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+  <style>
+    body      { background-color: #f0f4f8; }
+    .navbar   { background-color: #0a3d62 !important; }
+    .card-stat {
+      border-left: 5px solid #0a3d62;
+      border-radius: 10px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark px-4 py-3">
+  <span class="navbar-brand fw-bold fs-5">
+    📚 Emploi du Temps Étudiant — INF 232
+  </span>
+  <div class="d-flex gap-2">
+    <a href="/"           class="btn btn-outline-light btn-sm">Accueil</a>
+    <a href="/formulaire" class="btn btn-outline-light btn-sm">Saisir</a>
+    <a href="/donnees"    class="btn btn-outline-light btn-sm">Données</a>
+    <a href="/dashboard"  class="btn btn-outline-light btn-sm">Dashboard</a>
+    <a href="/export"     class="btn btn-success btn-sm">Export CSV</a>
+  </div>
+</nav>
+
+<div class="container mt-4 mb-5">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for categorie, message in messages %}
+        <div class="alert alert-{{ categorie }} alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="btn-close"
+                  data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block contenu %}{% endblock %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
