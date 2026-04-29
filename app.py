@@ -7,7 +7,6 @@ from models import db, Etudiant
 from forms import EtudiantForm
 
 app = Flask(__name__)
-app.config['SECRET_KEY']                     = os.environ.get('SECRET_KEY', 'dev-key-inf232')
 app.config['SQLALCHEMY_DATABASE_URI']        = os.environ.get('DATABASE_URL', 'sqlite:///emploi_du_temps.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
