@@ -3,14 +3,14 @@ import pandas as pd
 import plotly.express as px
 from flask import (Flask, render_template, redirect,
                    url_for, Response, flash)
-from api.models import db, Etudiant
-from api.forms import EtudiantForm
+from .models import db, Etudiant
+from .forms import EtudiantForm
 
 # On ajuste les dossiers templates et static pour pointer vers la racine du projet
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # Configuration de la clé secrète
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'une_cle_par_defaut_pour_le_local')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '216f422e7dc13f83311339cfc7e730e1a4467f9a64b2a492f3f9a8240ef45c97')
 
 # Configuration de la base de données PostgreSQL (Neon)
 database_url = os.environ.get('DATABASE_URL')
