@@ -6,20 +6,30 @@ from flask import (Flask, render_template, redirect,
 from models import db, Etudiant
 from forms import EtudiantForm
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
+
+# Configuration de la clé secrète
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'une_cle_par_defaut_pour_le_local')
-app.config['SQLALCHEMY_DATABASE_URI']        = os.environ.get('DATABASE_URL', 'sqlite:///emploi_du_temps.db')
+
+# Configuration de la base de données PostgreSQL (Neon)
+# Remplace postgresql:// par postgresql+psycopg2:// pour SQLAlchemy si nécessaire, ou utilise directement DATABASE_URL
+database_url = os.environ.get('DATABASE_URL')
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///emploi_du_temps.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
+# Création des tables dans le contexte de l'application
 with app.app_context():
     db.create_all()
 
 # ── ACCUEIL ───────────────────────────────────────────────────
 @app.route('/')
 def index():
-    total       = Etudiant.query.count()
+    total = Etudiant.query.count()
     tres_satisfaits = Etudiant.query.filter_by(satisfaction='Très').count()
     taux_satisfaction = round((tres_satisfaits / total * 100), 1) if total > 0 else 0
     return render_template('index.html',
@@ -30,23 +40,25 @@ def index():
 # ── FORMULAIRE ───────────────────────────────────────────────
 @app.route('/formulaire', methods=['GET', 'POST'])
 def formulaire():
-    form  = EtudiantForm()
+    form = EtudiantForm()
     total = Etudiant.query.count()
+    
     if total >= 100:
         flash('Les 100 étudiants ont déjà été enregistrés.', 'warning')
         return redirect(url_for('donnees'))
+    
     if form.validate_on_submit():
         etudiant = Etudiant(
-            age                = form.age.data,
-            sexe               = form.sexe.data,
-            niveau_etudes      = form.niveau_etudes.data,
-            filiere            = form.filiere.data,
-            heures_etude       = form.heures_etude.data,
-            moment_etude       = form.moment_etude.data,
-            matiere_principale = form.matiere_principale.data,
-            lieu_etude         = form.lieu_etude.data,
-            methode_etude      = form.methode_etude.data,
-            satisfaction       = form.satisfaction.data,
+            age=form.age.data,
+            sexe=form.sexe.data,
+            niveau_etudes=form.niveau_etudes.data,
+            filiere=form.filiere.data,
+            heures_etude=form.heures_etude.data,
+            moment_etude=form.moment_etude.data,
+            matiere_principale=form.matiere_principale.data,
+            lieu_etude=form.lieu_etude.data,
+            methode_etude=form.methode_etude.data,
+            satisfaction=form.satisfaction.data,
         )
         db.session.add(etudiant)
         db.session.commit()
@@ -54,12 +66,14 @@ def formulaire():
         flash(f'Étudiant enregistré ! Il reste {reste} étudiant(s) à saisir.',
               'success')
         return redirect(url_for('formulaire'))
+        
     return render_template('formulaire.html', form=form,
                            total=Etudiant.query.count())
 
 # ── DONNÉES ──────────────────────────────────────────────────
 @app.route('/donnees')
 def donnees():
+    # En supposant que created_at existe dans ton modèle
     etudiants = Etudiant.query.order_by(Etudiant.created_at.desc()).all()
     return render_template('donnees.html', etudiants=etudiants)
 
@@ -82,19 +96,16 @@ def dashboard():
 
     df = pd.DataFrame(rows)
 
-    # Statistiques descriptives
     stats = {
-        'total':             len(df),
-        'heures_moy':        round(df['heures_etude'].mean(), 1),
-        'heures_max':        df['heures_etude'].max(),
-        'heures_min':        df['heures_etude'].min(),
-        'moment_top':        df['moment_etude'].value_counts().idxmax(),
-        'lieu_top':          df['lieu_etude'].value_counts().idxmax(),
-        'methode_top':       df['methode_etude'].value_counts().idxmax(),
-        'filiere_top':       df.groupby('filiere')['heures_etude']
-                               .mean().idxmax(),
-        'pct_tres_satisfait': round(
-            (df['satisfaction'] == 'Très').mean() * 100, 1),
+        'total': len(df),
+        'heures_moy': round(df['heures_etude'].mean(), 1),
+        'heures_max': df['heures_etude'].max(),
+        'heures_min': df['heures_etude'].min(),
+        'moment_top': df['moment_etude'].value_counts().idxmax(),
+        'lieu_top': df['lieu_etude'].value_counts().idxmax(),
+        'methode_top': df['methode_etude'].value_counts().idxmax(),
+        'filiere_top': df.groupby('filiere')['heures_etude'].mean().idxmax(),
+        'pct_tres_satisfait': round((df['satisfaction'] == 'Très').mean() * 100, 1),
     }
 
     graphiques = []
@@ -165,13 +176,17 @@ def dashboard():
 @app.route('/export')
 def export():
     rows = [e.to_dict() for e in Etudiant.query.all()]
-    df   = pd.DataFrame(rows)
-    buf  = io.StringIO()
+    df = pd.DataFrame(rows)
+    buf = io.StringIO()
     df.to_csv(buf, index=False, sep=';', encoding='utf-8-sig')
     return Response(buf.getvalue(),
                     mimetype='text/csv',
                     headers={'Content-Disposition':
                              'attachment; filename=emploi_du_temps.csv'})
+
+# --- POUR VERCEL ---
+# Vercel recherche un objet application nommé "app" ou une fonction WSGI.
+app = app
 
 if __name__ == '__main__':
     app.run(debug=True)
