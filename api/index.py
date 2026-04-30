@@ -3,16 +3,16 @@ import pandas as pd
 import plotly.express as px
 from flask import (Flask, render_template, redirect,
                    url_for, Response, flash)
-from models import db, Etudiant
-from forms import EtudiantForm
+from api.models import db, Etudiant
+from api.forms import EtudiantForm
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+# On ajuste les dossiers templates et static pour pointer vers la racine du projet
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # Configuration de la clé secrète
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'une_cle_par_defaut_pour_le_local')
 
 # Configuration de la base de données PostgreSQL (Neon)
-# Remplace postgresql:// par postgresql+psycopg2:// pour SQLAlchemy si nécessaire, ou utilise directement DATABASE_URL
 database_url = os.environ.get('DATABASE_URL')
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
@@ -22,7 +22,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
-# Création des tables dans le contexte de l'application
 with app.app_context():
     db.create_all()
 
@@ -73,7 +72,6 @@ def formulaire():
 # ── DONNÉES ──────────────────────────────────────────────────
 @app.route('/donnees')
 def donnees():
-    # En supposant que created_at existe dans ton modèle
     etudiants = Etudiant.query.order_by(Etudiant.created_at.desc()).all()
     return render_template('donnees.html', etudiants=etudiants)
 
@@ -110,7 +108,6 @@ def dashboard():
 
     graphiques = []
 
-    # 1. Heures d'étude par filière
     fig1 = px.box(df, x='filiere', y='heures_etude',
                   title="Heures d'étude par filière",
                   color='filiere',
@@ -119,14 +116,12 @@ def dashboard():
     fig1.update_layout(showlegend=False)
     graphiques.append(fig1.to_html(full_html=False))
 
-    # 2. Moment d'étude préféré
     fig2 = px.pie(df, names='moment_etude',
                   title="Moment d'étude préféré",
                   hole=0.4,
                   color_discrete_sequence=px.colors.sequential.RdBu)
     graphiques.append(fig2.to_html(full_html=False))
 
-    # 3. Heures d'étude par niveau
     ordre_niveaux = ['Licence 1', 'Licence 2', 'Licence 3',
                      'Master 1', 'Master 2', 'Doctorat']
     fig3 = px.histogram(df, x='niveau_etudes', y='heures_etude',
@@ -139,14 +134,12 @@ def dashboard():
     fig3.update_layout(showlegend=False)
     graphiques.append(fig3.to_html(full_html=False))
 
-    # 4. Lieux d'étude préférés
     fig4 = px.pie(df, names='lieu_etude',
                   title="Lieux d'étude préférés",
                   hole=0.4,
                   color_discrete_sequence=px.colors.sequential.Teal)
     graphiques.append(fig4.to_html(full_html=False))
 
-    # 5. Méthodes d'étude utilisées
     methodes = df['methode_etude'].value_counts().reset_index()
     fig5 = px.bar(methodes, x='methode_etude', y='count',
                   title="Méthodes d'étude utilisées",
@@ -156,7 +149,6 @@ def dashboard():
     fig5.update_layout(showlegend=False)
     graphiques.append(fig5.to_html(full_html=False))
 
-    # 6. Satisfaction par filière
     satisfaction_ordre = ['Pas du tout', 'Peu', 'Assez', 'Très']
     fig6 = px.histogram(df, x='filiere',
                         color='satisfaction',
@@ -184,8 +176,6 @@ def export():
                     headers={'Content-Disposition':
                              'attachment; filename=emploi_du_temps.csv'})
 
-# --- POUR VERCEL ---
-# Vercel recherche un objet application nommé "app" ou une fonction WSGI.
 app = app
 
 if __name__ == '__main__':

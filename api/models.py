@@ -4,7 +4,7 @@ from datetime import datetime
 db = SQLAlchemy()
 
 class Etudiant(db.Model):
-    _tablename_ = 'etudiants'
+    __tablename__ = 'etudiants'
 
     id                  = db.Column(db.Integer, primary_key=True)
     age                 = db.Column(db.Integer, nullable=False)
@@ -32,4 +32,5 @@ class Etudiant(db.Model):
             'lieu_etude':         self.lieu_etude,
             'methode_etude':      self.methode_etude,
             'satisfaction':       self.satisfaction,
+            'created_at':         self.created_at.isoformat() if self.created_at else None
         }
