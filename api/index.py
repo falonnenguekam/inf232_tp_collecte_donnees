@@ -2,10 +2,12 @@ import os, io
 import pandas as pd
 import plotly.express as px
 from flask import (Flask, render_template, redirect,
-                   url_for, Response, flash)
+                   url_for, Response, flash, abort)
 from flask_migrate import Migrate
-from .models import db, Etudiant
-from .forms import EtudiantForm
+
+# Importation corrigée pour éviter les erreurs relatives selon votre structure
+from api.models import db, Etudiant
+from api.forms import EtudiantForm
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
@@ -37,9 +39,15 @@ with app.app_context():
 # ── ACCUEIL ───────────────────────────────────────────────────
 @app.route('/')
 def index():
-    total = Etudiant.query.count()
-    tres_satisfaits = Etudiant.query.filter_by(satisfaction='Très').count()
-    taux_satisfaction = round((tres_satisfaits / total * 100), 1) if total > 0 else 0
+    try:
+        total = Etudiant.query.count()
+        tres_satisfaits = Etudiant.query.filter_by(satisfaction='Très').count()
+        taux_satisfaction = round((tres_satisfaits / total * 100), 1) if total > 0 else 0
+    except Exception:
+        total = 0
+        tres_satisfaits = 0
+        taux_satisfaction = 0.0
+
     return render_template('index.html',
                            total=total,
                            tres_satisfaits=tres_satisfaits,
@@ -49,54 +57,77 @@ def index():
 @app.route('/formulaire', methods=['GET', 'POST'])
 def formulaire():
     form = EtudiantForm()
-    total = Etudiant.query.count()
     
+    try:
+        total = Etudiant.query.count()
+    except Exception:
+        total = 0
+
     if total >= 100:
         flash('Les 100 étudiants ont déjà été enregistrés.', 'warning')
         return redirect(url_for('donnees'))
     
     if form.validate_on_submit():
-        etudiant = Etudiant(
-            age=form.age.data,
-            sexe=form.sexe.data,
-            niveau_etudes=form.niveau_etudes.data,
-            filiere=form.filiere.data,
-            heures_etude=form.heures_etude.data,
-            moment_etude=form.moment_etude.data,
-            matiere_principale=form.matiere_principale.data,
-            lieu_etude=form.lieu_etude.data,
-            methode_etude=form.methode_etude.data,
-            satisfaction=form.satisfaction.data,
-        )
-        db.session.add(etudiant)
-        db.session.commit()
-        reste = 100 - Etudiant.query.count()
-        flash(f'Étudiant enregistré ! Il reste {reste} étudiant(s) à saisir.',
-              'success')
+        try:
+            etudiant = Etudiant(
+                age=form.age.data,
+                sexe=form.sexe.data,
+                niveau_etudes=form.niveau_etudes.data,
+                filiere=form.filiere.data,
+                heures_etude=form.heures_etude.data,
+                moment_etude=form.moment_etude.data,
+                matiere_principale=form.matiere_principale.data,
+                lieu_etude=form.lieu_etude.data,
+                methode_etude=form.methode_etude.data,
+                satisfaction=form.satisfaction.data,
+            )
+            db.session.add(etudiant)
+            db.session.commit()
+            
+            total_apres = Etudiant.query.count()
+            reste = 100 - total_apres
+            flash(f'Étudiant enregistré ! Il reste {reste} étudiant(s) à saisir.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash("Une erreur est survenue lors de l'enregistrement de l'étudiant : " + str(e), 'danger')
+            
         return redirect(url_for('formulaire'))
         
-    return render_template('formulaire.html', form=form,
-                           total=Etudiant.query.count())
+    return render_template('formulaire.html', form=form, total=total)
 
 # ── DONNÉES ──────────────────────────────────────────────────
 @app.route('/donnees')
 def donnees():
-    etudiants = Etudiant.query.order_by(Etudiant.created_at.desc()).all()
+    try:
+        etudiants = Etudiant.query.order_by(Etudiant.created_at.desc()).all()
+    except Exception:
+        etudiants = []
+        flash("Impossible de charger les données depuis la base de données.", "danger")
+        
     return render_template('donnees.html', etudiants=etudiants)
 
 # ── SUPPRESSION ──────────────────────────────────────────────
 @app.route('/supprimer/<int:id>')
 def supprimer(id):
     etudiant = Etudiant.query.get_or_404(id)
-    db.session.delete(etudiant)
-    db.session.commit()
-    flash('Entrée supprimée.', 'warning')
+    try:
+        db.session.delete(etudiant)
+        db.session.commit()
+        flash('Entrée supprimée.', 'warning')
+    except Exception as e:
+        db.session.rollback()
+        flash("Erreur lors de la suppression : " + str(e), 'danger')
+        
     return redirect(url_for('donnees'))
 
 # ── DASHBOARD ────────────────────────────────────────────────
 @app.route('/dashboard')
 def dashboard():
-    rows = [e.to_dict() for e in Etudiant.query.all()]
+    try:
+        rows = [e.to_dict() for e in Etudiant.query.all()]
+    except Exception:
+        rows = []
+        
     if not rows:
         return render_template('dashboard.html',
                                graphiques=[], stats={})
