@@ -3,26 +3,35 @@ import pandas as pd
 import plotly.express as px
 from flask import (Flask, render_template, redirect,
                    url_for, Response, flash)
+from flask_migrate import Migrate
 from .models import db, Etudiant
 from .forms import EtudiantForm
 
-# On ajuste les dossiers templates et static pour pointer vers la racine du projet
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # Configuration de la clé secrète
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '216f422e7dc13f83311339cfc7e730e1a4467f9a64b2a492f3f9a8240ef45c97')
+app.config['SECRET_KEY'] = os.environ.get(
+    'SECRET_KEY', 
+    '216f422e7dc13f83311339cfc7e730e1a4467f9a64b2a492f3f9a8240ef45c97'
+)
 
 # Configuration de la base de données PostgreSQL (Neon)
 database_url = os.environ.get('DATABASE_URL')
-if database_url and database_url.startswith("postgres://"):
+
+if not database_url:
+    raise ValueError("La variable d'environnement 'DATABASE_URL' est manquante ou non configurée !")
+
+if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///emploi_du_temps.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 with app.app_context():
+    # Crée les tables dans la base de données distante
     db.create_all()
 
 # ── ACCUEIL ───────────────────────────────────────────────────
